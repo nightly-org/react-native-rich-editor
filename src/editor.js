@@ -1,3 +1,50 @@
+/*
+ * ACTION_DOCUMENTATION
+ *
+ * "Actions" are a wide abstraction over the things you can do with a toolbar:
+ * it includes momentary actions like "undo" and "insert image", as well as
+ * property setters like foreground color and font size.
+ *
+ * (Actions are defined in the injected HTML below (search for
+ * `var Actions = {`). This documentation is *not* colocated because the
+ * injected HTML is passed without minification to the web view - extra inline
+ * documentation would affect performance.)
+ *
+ * By construction, it seems that Actions fall into three categories:
+ *  1. Momentary, stateless actions (e.g. undo, redo, insert image)
+ *  2. Boolean properties (e.g. bold, right-justified, has link)
+ *  3. Properties with an arbitrary value (e.g. font size, font family, link
+ *     target)
+ * 
+ * Note that (2) and (3) are not mutually exclusive: there is both a Boolean
+ * state of "does this text have a link?" as well as "what does this text link
+ * to?"
+ *
+ * These are encoded into an adhoc type `Action` which adheres to the following
+ * shape:
+ *
+ * ```ts
+ * interface Action<Input> {
+ *   // Applies this action to the editor (likely implicitly to the document's current selection).
+ *   result(data: Input): boolean;
+ *
+ *   // If present, action is a Boolean property, and returns true if action is "on".
+ *   state?: () => boolean;
+ *
+ *   // If present, action has properties with arbitrary values; returns an
+ *   // array of "Tool" values, which will be reported via the `registerToolbar`
+ *   // subscription.
+ *   reportTools?: () => Tool[];
+ * }
+ *
+ * type Tool =
+ *   | { hiliteColor: string }
+ *   | { foreColor: string }
+ *   | { fontSize: string }
+ *   | { fontName: string }
+ *   | { link: string };
+ * ```
+ */
 function getContentCSS() {
     /*img {max-width: 98%;margin-left:auto;margin-right:auto;display: block;}*/
     return `
@@ -251,6 +298,7 @@ function createHTML(options = {}) {
             }
         }
 
+        // see ACTION_DOCUMENTATION at top of editor.js
         var Actions = {
             bold: { state: function() { return queryCommandState('bold'); }, result: function() { return exec('bold'); }},
             italic: { state: function() { return queryCommandState('italic'); }, result: function() { return exec('italic'); }},
