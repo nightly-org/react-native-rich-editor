@@ -466,13 +466,19 @@ function createHTML(options = {}) {
                 if (typeof Actions[k] === 'object' && Actions[k].state){
                     actionsHandler[k] = Actions[k]
                 }
+                if (typeof Actions[k] === 'object' && Actions[k].reportTools){
+                    actionsHandler[k] = Actions[k]
+                }
             }
 
             function handler() {
                 var activeTools = [];
                 for(var k in actionsHandler){
-                    if ( Actions[k].state() ){
+                    if ( Actions[k].state != null && Actions[k].state() ){
                         activeTools.push(k);
+                    }
+                    if ( Actions[k].reportTools != null ){
+                        activeTools.push(...Actions[k].reportTools());
                     }
                 }
                 postAction({type: 'SELECTION_CHANGE', data: activeTools});
