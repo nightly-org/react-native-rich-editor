@@ -99,7 +99,11 @@ function createHTML(options = {}) {
         function querys(command){
             return document.querySelectorAll(command);
         }
-
+        function getSelectionComputedStyles() {
+            // TODO: map over nodes in range
+            return [window.getSelection().anchorNode.parentElement]
+              .map(n => getComputedStyle(n, null));
+        }
         function exec(command) {
             var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
             return document.execCommand(command, false, value);
@@ -295,10 +299,42 @@ function createHTML(options = {}) {
             justifyLeft: { state: function() { return queryCommandState('justifyLeft'); }, result: function() { return exec('justifyLeft'); }},
             justifyRight: { state: function() { return queryCommandState('justifyRight'); }, result: function() { return exec('justifyRight'); }},
             justifyFull: { state: function() { return queryCommandState('justifyFull'); }, result: function() { return exec('justifyFull'); }},
-            hiliteColor: {  state: function() { return queryCommandState('hiliteColor'); }, result: function(color) { return exec('hiliteColor', color); }},
-            foreColor: { state: function() { return queryCommandState('foreColor'); }, result: function(color) { return exec('foreColor', color); }},
-            fontSize: { result: function(size) { return exec('fontSize', size); }},
-            fontName: { result: function(name) { return exec('fontName', name); }},
+            hiliteColor: {
+              state: function() { return queryCommandState('hiliteColor'); },
+              result: function(color) { return exec('hiliteColor', color); },
+              reportTools: function() {
+                // TODO: handle mixed
+                const hiliteColor = getSelectionComputedStyles()[0]
+                  .getPropertyValue('background-color');
+                return [{ hiliteColor }];
+              },
+            },
+            foreColor: {
+              state: function() { return queryCommandState('foreColor'); },
+              result: function(color) { return exec('foreColor', color); },
+              reportTools: function() {
+                // TODO: handle mixed
+                const foreColor = getSelectionComputedStyles()[0]
+                  .getPropertyValue('color');
+                return [{ foreColor }];
+              },
+            },
+            fontSize: {
+              result: function(size) { return exec('fontSize', size); },
+              reportTools: function() {
+                // TODO: handle mixed font sizes
+                const fontSize = getSelectionComputedStyles()[0].getPropertyValue('font-size');
+                return [{ fontSize }];
+              },
+            },
+            fontName: {
+              result: function(name) { return exec('fontName', name); },
+              reportTools: function() {
+                // TODO: handle mixed
+                const fontName = getSelectionComputedStyles()[0].getPropertyValue('font-family');
+                return [{ fontName }];
+              },
+            },
             link: {
                 result: function(data) {
                     data = data || {};
@@ -309,7 +345,15 @@ function createHTML(options = {}) {
                     if (url){
                         exec('insertHTML', "<a href='"+ url +"'>"+(title || url)+"</a>");
                     }
+                },
+              reportTools: function() {
+                // TODO: handle mixed
+                const elt = window.getSelection().focusNode.parentElement;
+                if (elt.tagName === 'A') {
+                  return [{ link: elt.getAttribute('href') }];
                 }
+                return [];
+              },
             },
             image: {
                 result: function(url, style) {
