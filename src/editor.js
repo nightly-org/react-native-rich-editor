@@ -323,7 +323,8 @@ function createHTML(options = {}) {
                 state: function() { return queryCommandState('insertUnorderedList');},
                 result: function() { if (!!checkboxNode(window.getSelection().anchorNode)) return; return exec('insertUnorderedList');}
             },
-            code: { result: function(type) {
+            code: {
+              result: function(type) {
                 var flag = exec(formatBlock, '<pre>');
                 var node = anchorNode.nodeName === "PRE" ? anchorNode: anchorNode.parentNode;
                 if (node.nodeName === 'PRE'){
@@ -336,7 +337,20 @@ function createHTML(options = {}) {
                     });
                 }
                 return flag;
-             }},
+              },
+              state: function () {
+                // NB: This has the potential to be very slow, and to be
+                // invoked on every text field interaction.
+                let node = window.getSelection().focusNode;
+                while (node != null && node.id !== 'editor') {
+                  if (node.tagName === 'CODE') {
+                    return true;
+                  }
+                  node = node.parentNode;
+                }
+                return false;
+              }
+            },
             line: { result: function() { return exec('insertHorizontalRule'); }},
             redo: { result: function() { return exec('redo'); }},
             undo: { result: function() { return exec('undo'); }},
