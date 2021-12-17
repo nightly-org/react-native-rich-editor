@@ -33,6 +33,7 @@ export default class RichTextEditor extends Component {
         defaultParagraphSeparator: 'div',
         editorInitializedCallback: () => {},
         initialHeight: 0,
+        baseUrl: undefined,
     };
 
     constructor(props) {
@@ -66,6 +67,7 @@ export default class RichTextEditor extends Component {
             firstFocusEnd,
             useContainer,
             initialHeight,
+            baseUrl,
         } = props;
         that.state = {
             html: {
@@ -90,6 +92,7 @@ export default class RichTextEditor extends Component {
                         firstFocusEnd,
                         useContainer,
                     }),
+                baseUrl,
             },
             keyboardHeight: 0,
             height: initialHeight,
@@ -254,6 +257,7 @@ export default class RichTextEditor extends Component {
     renderWebView() {
         let that = this;
         const {html, editorStyle, useContainer, ...rest} = that.props;
+        // note that `viewHTML` also contains a `baseUrl` entry if one is provided
         const {html: viewHTML} = that.state;
         // webview dark theme bug
         const opacity = that.state.isInit ? 1 : 0;
